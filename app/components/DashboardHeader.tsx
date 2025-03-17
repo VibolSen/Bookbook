@@ -12,6 +12,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [adminName, setAdminName] = useState<string | null>(null);
   const [adminImageUrl, setAdminImageUrl] = useState<string | null>(null);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null); // Add email state
   const [userId, setUserId] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -49,7 +50,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("user_name, image_url")
+        .select("user_name, image_url, email") // Select email as well
         .eq("user_id", userId) // Use user_id
         .single();
 
@@ -59,6 +60,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         console.log("getAdminProfile: Data fetched:", data);
         setAdminName(data?.user_name || "Admin");
         setAdminImageUrl(data?.image_url || null);
+        setAdminEmail(data?.email || null); // Set the email state here!
       }
     } catch (error) {
       console.error("Error fetching admin profile:", error);
@@ -76,9 +78,21 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [userId]);
 
+  const getInitials = (email: string | null, name: string | null) => {
+    if (name) {
+      const parts = name.split(" ");
+      return parts.map((part) => part.charAt(0).toUpperCase()).join("");
+    }
+    if (!email) return ""; // Fallback if no email
+    const username = email.split("@")[0]; // Get the part before the @
+    const firstLetter = username.charAt(0).toUpperCase();
+    return firstLetter; // Or first two letters, etc.
+  };
+
   if (!isMounted) {
     return null;
   }
+  const initials = getInitials(adminEmail, adminName);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
@@ -139,13 +153,21 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
           {/* Profile */}
           <div className="flex items-center space-x-3">
-            <Image
-              src={adminImageUrl || "/default-avatar.png"}
-              alt="Admin Avatar"
-              width={40}
-              height={40}
-              className="rounded-full object-cover"
-            />
+            {adminImageUrl ? (
+              <Image
+                src={adminImageUrl}
+                alt="Admin Avatar"
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                <span className="text-lg font-medium text-gray-700">
+                  {initials}
+                </span>
+              </div>
+            )}
             <span className="font-medium">{adminName || "Loading..."}</span>
           </div>
         </header>
