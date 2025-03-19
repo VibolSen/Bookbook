@@ -141,11 +141,19 @@ export default function Navbar() {
             {/* Right Section (Search, Add Recipe, Profile) */}
             <div className="flex items-center space-x-20">
               {/* Search Bar */}
+              <div className="relative w-64">
               <input
                 type="text"
-                className="border border-gray-500 rounded-full pl-4 pr-10 py-3 text-sm"
+                className="w-full border border-gray-500 rounded-full pl-10 pr-4 py-3 text-sm"
                 placeholder="Search by name"
               />
+              <img
+                src="https://static.vecteezy.com/system/resources/thumbnails/001/504/972/small/search-icon-free-vector.jpg"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                alt="Search Icon"
+              />
+            </div>
+
 
               {/* Add Recipe Link */}
               <Link
