@@ -1,3 +1,4 @@
+// pages/admin/recipes/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,6 +6,8 @@ import { supabase } from "../../lib/supabaseClient";
 import Link from "next/link";
 import Image from "next/image";
 import AdminLayout from "../../components/DashboardHeader";
+import AddCategoryModal from "../../components/AddCategoryModal";
+import AddOccasionModal from "../../components/AddOccasionModal";
 
 type Category = {
   category_id: string;
@@ -18,41 +21,47 @@ type Occasion = {
   image_occasions: string;
 };
 
-// Fetch categories and occasions from the database
-async function getCategories(): Promise<Category[]> {
-  try {
-    const { data, error } = await supabase.from("categories").select();
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    return [];
-  }
-}
-
-async function getOccasions(): Promise<Occasion[]> {
-  try {
-    const { data, error } = await supabase.from("occasions").select();
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error("Error fetching occasions:", error);
-    return [];
-  }
-}
-
 export default function RecipeManagement() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [occasions, setOccasions] = useState<Occasion[]>([]);
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [showAddOccasionModal, setShowAddOccasionModal] = useState(false);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase.from("category").select();
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchOccasions = async () => {
+    try {
+      const { data, error } = await supabase.from("occasion").select();
+      if (error) throw error;
+      setOccasions(data || []);
+    } catch (error) {
+      console.error("Error fetching occasions:", error);
+    }
+  };
 
   useEffect(() => {
-    getCategories().then(setCategories);
-    getOccasions().then(setOccasions);
+    fetchCategories();
+    fetchOccasions();
   }, []);
+
+  const handleCategoryAdded = () => {
+    fetchCategories(); // Refresh categories after adding
+  };
+
+  const handleOccasionAdded = () => {
+    fetchOccasions(); // Refresh occasions after adding
+  };
 
   return (
     <AdminLayout>
-      {/* Main Content */}
       <main className="container mx-auto p-4 md:p-8">
         <div className="bg-gray-50 min-h-screen p-4 md:p-8">
           {/* Recipe Category Section */}
@@ -90,12 +99,12 @@ export default function RecipeManagement() {
               )}
               {/* Add Category Button */}
               <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg border-dashed border-2 border-gray-300 hover:border-gray-400 transition-colors duration-200">
-                <Link
-                  href="/recipes/add-category"
+                <button
+                  onClick={() => setShowAddCategoryModal(true)}
                   className="text-orange-500 text-lg font-medium hover:text-orange-600 transition-colors duration-200"
                 >
                   + Add Category
-                </Link>
+                </button>
               </div>
             </div>
           </section>
@@ -135,17 +144,28 @@ export default function RecipeManagement() {
               )}
               {/* Add Occasion Button */}
               <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg border-dashed border-2 border-gray-300 hover:border-gray-400 transition-colors duration-200">
-                <Link
-                  href="/recipes/add-occasion"
+                <button
+                  onClick={() => setShowAddOccasionModal(true)}
                   className="text-orange-500 text-lg font-medium hover:text-orange-600 transition-colors duration-200"
                 >
                   + Add Occasion
-                </Link>
+                </button>
               </div>
             </div>
           </section>
         </div>
       </main>
+
+      <AddCategoryModal
+        isOpen={showAddCategoryModal}
+        onClose={() => setShowAddCategoryModal(false)}
+        onCategoryAdded={handleCategoryAdded}
+      />
+      <AddOccasionModal
+        isOpen={showAddOccasionModal}
+        onClose={() => setShowAddOccasionModal(false)}
+        onOccasionAdded={handleOccasionAdded}
+      />
     </AdminLayout>
   );
 }
